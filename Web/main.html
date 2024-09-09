@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pacman Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    canvas {
+      border: 1px solid black;
+      display: block;
+      margin: 20px auto;
+      background-color: black;
+    }
+  </style>
+</head>
+<body>
+<h1>Pacman Game</h1>
+<canvas id="gameCanvas" width="400" height="200"></canvas>
+<p>Score: <span id="score">0</span></p>
+<p>Use W, A, S, D to move. Press Q to quit.</p>
+
+<script>
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const tileSize = 20;
+  const width = 20;
+  const height = 10;
+  let score = 0;
+  let gameOver = false;
+
+  const map = [
+    "###################",
+    "#                 #",
+    "#  ####  #######  #",
+    "#  #        #     #",
+    "#  ###  #######   #",
+    "#                 #",
+    "#  #######  ####  #",
+    "#                 #",
+    "#                 #",
+    "###################"
+  ];
+
+  const pacman = {
+    x: 1,
+    y: 1
+  };
+
+  const ghost = {
+    x: 10,
+    y: 5
+  };
+
+  function drawMap() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const char = map[y][x];
+        if (char === '#') {
+          ctx.fillStyle = 'blue';
+          ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+        } else if (x === pacman.x && y === pacman.y) {
+          ctx.fillStyle = 'yellow';
+          ctx.beginPath();
+          ctx.arc(x * tileSize + tileSize / 2, y * tileSize + tileSize / 2, tileSize / 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (x === ghost.x && y === ghost.y) {
+          ctx.fillStyle = 'red';
+          ctx.beginPath();
+          ctx.arc(x * tileSize + tileSize / 2, y * tileSize + tileSize / 2, tileSize / 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+  }
+
+  function movePacman(dx, dy) {
+    const newX = pacman.x + dx;
+    const newY = pacman.y + dy;
+    if (map[newY][newX] === ' ') {
+      pacman.x = newX;
+      pacman.y = newY;
+      score += 10;
+      document.getElementById('score').innerText = score;
+    }
+  }
+
+  function moveGhost() {
+    let dx = 0, dy = 0;
+    if (Math.random() < 0.5) {
+      dx = (ghost.x < pacman.x) ? 1 : -1;
+    } else {
+      dy = (ghost.y < pacman.y) ? 1 : -1;
+    }
+
+    const newX = ghost.x + dx;
+    const newY = ghost.y + dy;
+
+    if (map[newY][newX] === ' ') {
+      ghost.x = newX;
+      ghost.y = newY;
+    }
+  }
+
+  function updateGame() {
+    if (pacman.x === ghost.x && pacman.y === ghost.y) {
+      gameOver = true;
+      alert(`Game Over! Final Score: ${score}`);
+      return;
+    }
+
+    moveGhost();
+    drawMap();
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (gameOver) return;
+    switch (e.key) {
+      case 'w': movePacman(0, -1); break;
+      case 's': movePacman(0, 1); break;
+      case 'a': movePacman(-1, 0); break;
+      case 'd': movePacman(1, 0); break;
+      case 'q': gameOver = true; alert('Game Quit!'); return;
+    }
+    updateGame();
+  });
+
+  setInterval(() => {
+    if (!gameOver) updateGame();
+  }, 500);
+
+  drawMap();
+</script>
+</body>
+</html>
